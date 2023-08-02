@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:11-alpine
+    environment:
+        - POSTGRES_PASSWORD=test1234
+        - POSTGRES_USER=mmsuser
+        - POSTGRES_DB=mms
+    ports:
+      - 5432:5432
+    volumes:
+     - postres_data:/var/lib/postgresql/data
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
+    environment:
+      - "discovery.type=single-node"
+    ports:
+        - 9200:9200
+        - 9300:9300
+    volumes:
+        - esdata:/usr/share/elasticsearch/data
+
+  minio:
+    image: minio/minio:latest
+    environment:
+        - "MINIO_ACCESS_KEY=admintest"
+        - "MINIO_SECRET_KEY=admintest"
+    command: server /tmp/data
+    ports:
+        - 9000:9000
+        - 9001:9000
+    volumes:
+      - minio_data:/data
+
+  mms:
+    build: ./mms-4.0.7
+    container_name: mms
+    hostname: mms
+    environment:
+        - "SPRING_PROFILES_ACTIVE=test"
+    depends_on:
+        - postgres
+        - elasticsearch
+        - minio
+    ports: 
+        - 8080:8080
+
+  nginx:
+    build:
+      context: ./ve-4.0.2
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+      
+# added for easy access to postgres
+  # Login:
+  ## System PostgreSQL
+  ## Server: postgres (same name as set up in this file @ line4)
+  ## Username: mmsuser
+  ## Password: test1234
+  ## Database: mms
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "6080:8080"
+
+# Create Volumes
+# https://docs.docker.com/compose/compose-file/compose-file-v3/#external
+
+volumes:
+   postres_data:
+     driver: local
+     # external: true
+     # name: mms_data
+
+   minio_data:
+     driver: local
+
+#   ve_data:
+#     driver: local
+
+#   mms_data:
+#     driver: local
+
+   esdata:
+     driver: local
+#     driver_opts:
+#       type: 'none'
+#       o: 'bind'
+#       device: './' 
+
+# Genreal setup example/src/main/resources/
