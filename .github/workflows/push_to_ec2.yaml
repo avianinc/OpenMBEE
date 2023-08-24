@@ -34,14 +34,8 @@ jobs:
             sudo systemctl enable docker
             sudo systemctl start docker
           fi
-
-          if ! command -v docker-compose &> /dev/null; then
-            sudo curl -L 'https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)' -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-            sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-          fi
         "
 
     - name: Deploy OpenMBEE
       run: |
-        ssh -o StrictHostKeyChecking=no ec2-user@54.208.197.217 "cd /opt/openmbee && docker-compose up -d"
+        ssh -o StrictHostKeyChecking=no ec2-user@54.208.197.217 "sudo cd /opt/openmbee && docker-compose up -d"
