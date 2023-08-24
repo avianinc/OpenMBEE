@@ -18,9 +18,10 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-    - name: Clone Repository to Server
+    - name: Remove Existing Directory and Clone Repository to Server
       run: |
         ssh -o StrictHostKeyChecking=no ec2-user@54.208.197.217 "
+          sudo rm -rf /opt/openmbee
           git clone https://github.com/avianinc/OpenMBEE.git /opt/openmbee
         "
 
