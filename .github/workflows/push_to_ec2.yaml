@@ -22,9 +22,10 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no ec2-user@54.208.197.217 "
           sudo rm -rf /opt/openmbee
-          git clone https://github.com/avianinc/OpenMBEE.git /opt/openmbee
+          sudo git clone https://github.com/avianinc/OpenMBEE.git /opt/openmbee
+          sudo chown -R ec2-user:ec2-user /opt/openmbee
         "
-
+        
     - name: Install Docker and Docker Compose if Not Present
       run: |
         ssh -o StrictHostKeyChecking=no ec2-user@54.208.197.217 "
