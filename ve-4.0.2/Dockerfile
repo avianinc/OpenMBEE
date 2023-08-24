@@ -1,4 +1,4 @@
-# Base image
+# Base image 
 FROM ubuntu:20.04
 
 # Define arguments
