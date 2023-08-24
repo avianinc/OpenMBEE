@@ -21,7 +21,7 @@ jobs:
     - name: Install Dependencies
       run: |
         ssh -o StrictHostKeyChecking=no ec2-user@54.208.197.217 "
-          sudo yum install libxcrypt-compat git amazon-linux-extras -y 
+          sudo yum install libxcrypt-compat git -y 
         "
 
     - name: Clone Repository to Server
