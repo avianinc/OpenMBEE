@@ -1,4 +1,4 @@
-name: Deploy OpenMBEE to EC2
+name: Deploy OpenMBEE to EC2!
 
 on:
   push:
