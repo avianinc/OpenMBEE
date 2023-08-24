@@ -1,56 +1,96 @@
-name: Deploy OpenMBEE to EC2!
+version: '3.8'
 
-on:
-  push:
-    branches:
-      - main
+services:
+  postgres:
+    image: postgres:11-alpine
+    environment:
+        - POSTGRES_PASSWORD=test1234
+        - POSTGRES_USER=mmsuser
+        - POSTGRES_DB=mms
+    ports:
+      - 5432:5432
+    volumes:
+     - postres_data:/var/lib/postgresql/data
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
+    environment:
+      - "discovery.type=single-node"
+    ports:
+        - 9200:9200
+        - 9300:9300
+    volumes:
+        - esdata:/usr/share/elasticsearch/data
 
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
+  minio:
+    image: minio/minio:latest
+    environment:
+        - "MINIO_ACCESS_KEY=admintest"
+        - "MINIO_SECRET_KEY=admintest"
+    command: server /tmp/data
+    ports:
+        - 9000:9000
+        - 9001:9000
+    volumes:
+      - minio_data:/data
 
-    - name: Set Up SSH Key
-      uses: webfactory/ssh-agent@v0.5.0
-      with:
-        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+  mms:
+    build: ./mms-4.0.7
+    container_name: mms
+    hostname: mms
+    environment:
+        - "SPRING_PROFILES_ACTIVE=test"
+    depends_on:
+        - postgres
+        - elasticsearch
+        - minio
+    ports: 
+        - 8080:8080
 
-    - name: Install Dependencies
-      run: |
-        ssh -o StrictHostKeyChecking=no ec2-user@54.208.197.217 "
-          sudo yum install -y libxcrypt-compat
-        "
+  nginx:
+    build:
+      context: ./ve-4.0.2
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+      
+# added for easy access to postgres
+  # Login:
+  ## System PostgreSQL
+  ## Server: postgres (same name as set up in this file @ line4)
+  ## Username: mmsuser
+  ## Password: test1234
+  ## Database: mms
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "6080:8080"
 
-    - name: Install Docker and Docker Compose if Not Present
-      run: |
-        ssh -o StrictHostKeyChecking=no ec2-user@54.208.197.217 "
-          if ! command -v docker &> /dev/null; then
-            sudo amazon-linux-extras install docker -y
-            sudo systemctl enable docker
-            sudo systemctl start docker
-          fi
+# Create Volumes
+# https://docs.docker.com/compose/compose-file/compose-file-v3/#external
 
-          if ! command -v docker-compose &> /dev/null; then
-            sudo curl -L 'https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)' -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-            sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-          fi
-        "
+volumes:
+   postres_data:
+     driver: local
+     # external: true
+     # name: mms_data
 
-    - name: Create Directory and Set Permissions
-      run: |
-        ssh -o StrictHostKeyChecking=no ec2-user@54.208.197.217 "
-          sudo mkdir -p /opt/openmbee
-          sudo chown ec2-user:ec2-user /opt/openmbee
-        "
+   minio_data:
+     driver: local
 
-    - name: Copy Docker Compose File
-      run: |
-        scp docker-compose.yml ec2-user@54.208.197.217:/opt/openmbee
+#   ve_data:
+#     driver: local
 
-    - name: Deploy OpenMBEE
-      run: |
-        ssh -o StrictHostKeyChecking=no ec2-user@54.208.197.217 "cd /opt/openmbee && docker-compose up -d"
+#   mms_data:
+#     driver: local
+
+   esdata:
+     driver: local
+#     driver_opts:
+#       type: 'none'
+#       o: 'bind'
+#       device: './' 
+
+# Genreal setup example/src/main/resources/
