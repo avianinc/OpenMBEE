@@ -25,6 +25,8 @@ RUN wget https://github.com/Open-MBEE/ve/releases/download/${VE_VERSION}/${VE_VE
     unzip ${VE_VERSION}.zip -d /var/www/html && \
     rm ${VE_VERSION}.zip
 
+RUN sed -i 's|apiUrl: '\''http://localhost:8080'\''|apiUrl: '\''http://54.208.197.217:8080'\''|g' /var/www/html/dist/js/ve-mms.min.b4876f296d0d3d3e.js
+
 # Change the ownership and permissions of the Nginx web directory
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html
