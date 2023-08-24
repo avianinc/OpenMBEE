@@ -38,4 +38,4 @@ jobs:
 
     - name: Deploy OpenMBEE
       run: |
-        ssh -o StrictHostKeyChecking=no ec2-user@54.208.197.217 "sudo cd /opt/openmbee && docker-compose up -d"
+        ssh -o StrictHostKeyChecking=no ec2-user@54.208.197.217 "cd /opt/openmbee && sudo docker-compose up -d"
