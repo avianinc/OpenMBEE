@@ -8,7 +8,7 @@ ARG VE_VERSION=4.0.2
 
 # Install Nginx and required tools
 RUN apt-get update && \
-    apt-get install -y nginx wget unzip && \
+    apt-get install -y nginx wget unzip nano && \
     rm -rf /var/lib/apt/lists/* 
 
 # Remove the default Nginx configuration file
