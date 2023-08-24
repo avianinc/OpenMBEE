@@ -24,6 +24,12 @@ jobs:
           sudo yum install -y libxcrypt-compat
         "
 
+    - name: Clone Repository to Server
+      run: |
+        ssh -o StrictHostKeyChecking=no ec2-user@54.208.197.217 "
+          git clone https://github.com/avianinc/OpenMBEE.git /opt/openmbee/mms-4.0.7
+        "
+
     - name: Install Docker and Docker Compose if Not Present
       run: |
         ssh -o StrictHostKeyChecking=no ec2-user@54.208.197.217 "
